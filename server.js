@@ -9,8 +9,33 @@ const port = process.env.PORT || 8080;
 // Middleware to parse JSON request bodies
 app.use(bodyParser.json());
 
+// List of allowed origins
+const allowedOrigins = [
+  'https://www.rhv.rs',
+  'http://www.rhv.rs',
+  'http://oks-api-production.up.railway.app',
+  'https://oks-api-production.up.railway.app',
+  'https://accounts.google.com',
+  'https://oks-api-production.up.railway.app/login'
+];
+
 // Configure CORS
-app.use(cors());
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like server-to-server requests)
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }, // Allow only this domain
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow these methods
+  allowedHeaders: 'Content-Type,Authorization', // Allow these headers
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 // Proxy endpoint
 app.get('/proxy/:fileId', async (req, res) => {
